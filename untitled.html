@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>YNN — Developer & Creator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+  }
+
+  #enter-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000;
+    z-index: 1000;
+    cursor: pointer;
+    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 1.2s;
+  }
+
+  #enter-overlay.hide {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 1s;
+  }
+
+  .enter-text {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 6vw, 4.5rem);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    background: linear-gradient(120deg, #ffffff, #b0b0b0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-transform: uppercase;
+    animation: gentlePulse 2.4s infinite ease-out;
+  }
+
+  @keyframes gentlePulse {
+    0% { opacity: 0.6; letter-spacing: 0.2em; filter: blur(0);}
+    50% { opacity: 1; letter-spacing: 0.28em; filter: blur(0.3px); text-shadow: 0 0 18px rgba(255,255,255,0.2);}
+    100% { opacity: 0.6; letter-spacing: 0.2em; filter: blur(0);}
+  }
+
+  .bg-container {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+  }
+
+  #bg-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translateX(-50%) translateY(-50%);
+    object-fit: cover;
+    filter: brightness(0.42) contrast(1.05) saturate(1.1);
+    animation: bgzoom 22s ease-in-out infinite alternate;
+  }
+
+  @keyframes bgzoom {
+    0% {
+      transform: translateX(-50%) translateY(-50%) scale(1);
+    }
+    100% {
+      transform: translateX(-50%) translateY(-50%) scale(1.09);
+    }
+  }
+
+  .fallback-gradient {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, #1a1a2e, #0a0a0a);
+    z-index: -3;
+  }
+
+  .dynamic-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 25%, rgba(20,20,30,0.45), rgba(0,0,0,0.75));
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .main {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+    animation: fadeUpMain 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fadeUpMain {
+    0% {
+      opacity: 0;
+      transform: translateY(42px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 32px;
+    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.08), 0 28px 44px -12px rgba(0, 0, 0, 0.6);
+    transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  }
+
+  .avatar:hover {
+    transform: translateY(-8px) scale(1.04);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 35px 55px -12px black;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  }
+
+  .avatar:hover img {
+    transform: scale(1.05);
+  }
+
+  .name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(72px, 13vw, 160px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(180deg, #ffffff 0%, #dbdbdb 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 18px;
+  }
+
+  .tag {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 450;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+    margin-bottom: 58px;
+    backdrop-filter: blur(3px);
+  }
+
+  .nav {
+    display: flex;
+    gap: 52px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .nav a {
+    position: relative;
+    font-family: 'Inter', sans-serif;
+    font-weight: 520;
+    font-size: 15px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+    padding: 8px 0;
+    transition: color 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav a svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    transition: transform 0.2s ease;
+  }
+
+  .nav a:hover svg {
+    transform: translateY(-1px);
+  }
+
+  .nav a::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 0%;
+    height: 1.8px;
+    background: #ffffff;
+    transform: translateX(-50%);
+    transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 4px;
+  }
+
+  .nav a:hover {
+    color: #ffffff;
+    transform: translateY(-2px);
+  }
+
+  .nav a:hover::after {
+    width: 100%;
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 38px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 3.2px;
+    color: rgba(255, 255, 255, 0.32);
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  @media (max-width: 720px) {
+    .avatar {
+      width: 110px;
+      height: 110px;
+      margin-bottom: 24px;
+    }
+    .tag {
+      font-size: 12px;
+      letter-spacing: 3px;
+      margin-bottom: 44px;
+    }
+    .nav {
+      gap: 32px;
+    }
+    .nav a {
+      font-size: 13px;
+      letter-spacing: 1.6px;
+    }
+    .footer {
+      font-size: 9px;
+      letter-spacing: 2.5px;
+      bottom: 24px;
+    }
+    .name {
+      margin-bottom: 14px;
+    }
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="enter-overlay">
+  <div class="enter-text">⟡ ENTER ⟡</div>
+</div>
+
+<div class="bg-container">
+  <video id="bg-video" autoplay muted loop playsinline disableRemotePlayback>
+    <source src="background.mp4" type="video/mp4">
+  </video>
+</div>
+<div class="fallback-gradient"></div>
+<div class="dynamic-overlay"></div>
+
+<div class="main">
+  <div class="avatar">
+    <img src="https://chaton-images.s3.us-east-2.amazonaws.com/t8Gmuw4p0VlbNF41xF6VQZnU3pJNr5a8Dc3g3O5sUA7GynaYZKinXE9awYJst1cL_1080x1080x556448.png">
+  </div>
+  <div class="name">YNN</div>
+  <div class="tag">
+    Developer · Creator · Designer
+  </div>
+  <div class="nav">
+    <a href="#">
+      <svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9L12 3L21 9L12 15L3 9Z" />
+        <path d="M5 10V18L12 22L19 18V10" />
+        <path d="M12 15V22" />
+      </svg>
+      HOME
+    </a>
+  </div>
+</div>
+
+<div class="footer">
+  YNN © 2026
+</div>
+
+<script>
+  (function() {
+    const enterDiv = document.getElementById('enter-overlay');
+    const bgVideo = document.getElementById('bg-video');
+    const fallbackDiv = document.querySelector('.fallback-gradient');
+
+    function handleVideoFallback() {
+      if (bgVideo) {
+        let videoLoaded = false;
+        
+        bgVideo.addEventListener('loadeddata', function() {
+          videoLoaded = true;
+          if (fallbackDiv) fallbackDiv.style.opacity = '0';
+        });
+        
+        bgVideo.addEventListener('error', function() {
+          console.log('Video failed to load, using gradient background');
+          if (fallbackDiv) fallbackDiv.style.opacity = '1';
+          bgVideo.style.opacity = '0';
+        });
+        
+        setTimeout(function() {
+          if (!videoLoaded && bgVideo.readyState < 2) {
+            if (fallbackDiv) fallbackDiv.style.opacity = '1';
+            bgVideo.style.opacity = '0';
+          }
+        }, 1500);
+      }
+    }
+
+    function activateMediaAndEnter() {
+      if (!enterDiv) return;
+      enterDiv.classList.add('hide');
+      if (bgVideo) {
+        bgVideo.muted = false;
+        bgVideo.volume = 0.3;
+        const playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            bgVideo.muted = true;
+            bgVideo.play().catch(() => {});
+          });
+        }
+        bgVideo.playbackRate = 0.98;
+      }
+    }
+
+    if (enterDiv) {
+      enterDiv.addEventListener('click', activateMediaAndEnter);
+      enterDiv.addEventListener('touchend', activateMediaAndEnter);
+    }
+
+    if (bgVideo) {
+      bgVideo.muted = true;
+      bgVideo.preload = 'auto';
+      bgVideo.play().catch(() => {});
+      handleVideoFallback();
+    }
+
+    if (fallbackDiv) {
+      fallbackDiv.style.transition = 'opacity 1s ease';
+      fallbackDiv.style.opacity = '0';
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && enterDiv && !enterDiv.classList.contains('hide')) {
+        activateMediaAndEnter();
+      }
+    });
+  })();
+</script>
+</body>
+</html>
